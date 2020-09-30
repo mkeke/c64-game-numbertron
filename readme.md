@@ -12,4 +12,4 @@ Open `numbertron.prg` in the emulator and have fun! Or run the source code throu
 ![screenshot](numbertron.png)  
 Screenshot  
 
-Move the red heart using WASD. The first number in the chosen direction dictates how many steps you take in that direction. You get points for each value along the way. If you move too far off the board, or intercepts your own tail, the game is up.
+Move the red heart using WASD. The first number in the chosen direction dictates how many steps you take in that direction. You get points for each value along the way. If you move too far off the board, or intercept your own tail, the game is up.
