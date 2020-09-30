@@ -1,0 +1,124 @@
+/*
+    Numbertron
+
+    Inspired by
+    https://spillhistorie.no/2019/07/01/post-mortem-numbertron/
+*/
+
+@include _constants.txt
+
+poke<border>,<black>:poke<screen>,<black>:print<chrClear>
+
+@start
+    // start pos is top left within the board
+    >cursorPos=1065
+    >direction=0
+    >score=0
+    >tailColor=<yellow>
+
+    print <chrGrey><chrClear>
+
+    gosub @printBorder
+    gosub @printScore
+    gosub @printNumbers
+    gosub @printCursor
+
+    @mainLoop
+        get a$
+        if a$="w" then >direction=-40:gosub @movement
+        if a$="a" then >direction=-1 :gosub @movement
+        if a$="s" then >direction=40 :gosub @movement
+        if a$="d" then >direction=1  :gosub @movement
+        goto @mainLoop
+    end
+
+@printScore
+    >ypos=23:>xpos=32:<movecrsr2>
+    print <chrWhite>>score<chrHome>
+return
+
+
+@printCursor
+    poke >cursorPos,<heart>:poke >cursorPos+54272,<red>
+return
+
+
+@gameOver
+    >ypos=23:>xpos=14:<movecrsr2>
+    print <chrYellow>"-game  over-"
+
+    poke >cursorPos,160:poke 54272+>cursorPos,>tailColor
+    poke >cursorPos+>direction,<heart>
+    poke 54272+>cursorPos+>direction,<red>
+
+    @readChar
+        get a$:if a$="" then goto @readChar
+    goto @start
+
+
+@printBorder
+    // corners dark grey
+    poke 1024,<roundNW>:poke 55296,<darkGrey>
+    poke 1063,<roundNE>:poke 55335,<darkGrey>
+    poke 1984,<roundSW>:poke 56256,<darkGrey>
+    poke 2023,<roundSE>:poke 56295,<darkGrey>
+
+    // horizontal lines
+    for x=1 to 38
+        poke 1024+x,67: poke 1984+x,67:poke 1864+x,67
+    next x
+
+    // vertical lines
+    for y=1 to 23
+        poke 1024+y*40,66
+        poke 1024+39+y*40,66
+    next y
+
+    // crossroads
+    poke 1864,107:poke 1903,115
+
+    // text bottom panel
+    >ypos=23:>xpos=1:<movecrsr2>
+    print "asd"<l><l><u>"w"
+    >ypos=22:>xpos=15:<movecrsr2>
+    print "numbertron        score"
+    >ypos=23:>xpos=16:<movecrsr2>
+    print "N 2020 M"
+return
+
+
+@printNumbers
+    for x=1 to 38: rem 38
+        for y=1 to 20: rem 20
+            poke 1024+y*40+x,int(rnd(0)*9)+49
+        next y
+    next x
+return
+
+
+@movement
+    // get screen character code
+    >value = peek(>cursorPos+>direction)
+
+    // if character is game border then dont do anything
+    if >value=66 or >value=67 then return
+
+    // if value is space then game over
+    if >value=160 then goto @gameOver
+
+    // else: move in current direction
+    >value = >value - 48
+    poke >cursorPos,160
+    poke >cursorPos+54272,>tailColor
+    for a=1 to >value
+        // get number in the current direction
+        n = peek(>cursorPos+>direction)-48
+        if n<1 or n>9 then goto @gameOver
+        >cursorPos = >cursorPos + >direction
+        >score = >score + n
+        gosub @printScore
+        poke >cursorPos,160
+        poke >cursorPos+54272,>tailColor
+    next a
+    gosub @printCursor
+return
